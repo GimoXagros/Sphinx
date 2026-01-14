@@ -3,9 +3,8 @@
 //  Bandai WonderSwan Video emulation for GBA/NDS.
 //
 //  Created by Fredrik Ahlström on 2006-07-23.
-//  Copyright © 2006-2025 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2006-2026 Fredrik Ahlström. All rights reserved.
 //
-
 #ifdef __arm__
 
 #ifdef GBA
@@ -2895,7 +2894,7 @@ defaultOutTable:
 
 ;@----------------------------------------------------------------------------
 #ifdef GBA
-	.section .sbss				;@ For the GBA
+	.section .sbss				;@ This is EWRAM on GBA with devkitARM
 #else
 	.section .bss
 #endif

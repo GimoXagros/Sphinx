@@ -3,14 +3,14 @@
 //  Bandai WonderSwan Sound emulation for GBA/NDS.
 //
 //  Created by Fredrik Ahlström on 2006-07-23.
-//  Copyright © 2006-2025 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2006-2026 Fredrik Ahlström. All rights reserved.
 //
-
 #ifdef __arm__
+
 #include "Sphinx.i"
 
 #ifdef GBA
-#define PSG_DIVIDE 24
+#define PSG_DIVIDE 21
 #else
 #define PSG_DIVIDE 16
 #endif
@@ -235,26 +235,38 @@ wsaSetTotalVolume:
 	ldr r1,=mix8Vol
 	str r0,[r1]
 	bx lr
+#ifndef GBA
 hw1Volumes:
-	mov r2,r2,lsr#32
-	mov r2,r2,lsr#1
-	mov r2,r2,lsr#0
-	mov r2,r2,lsr#0
+	eor r3,lr,r3,lsr#32
+	eor r3,lr,r3,lsr#1
+	eor r3,lr,r3,lsr#0
+	eor r3,lr,r3,lsr#0
 hw2Volumes:
-	mov r2,r2,lsr#32
-	mov r2,r2,lsr#2
-	mov r2,r2,lsr#1
-	mov r2,r2,lsr#0
+	eor r3,lr,r3,lsr#32
+	eor r3,lr,r3,lsr#2
+	eor r3,lr,r3,lsr#1
+	eor r3,lr,r3,lsr#0
+#else
+hw1Volumes:
+	mov lr,lr,lsr#32
+	mov lr,lr,lsr#10
+	mov lr,lr,lsr#9
+	mov lr,lr,lsr#9
+hw2Volumes:
+	mov lr,lr,lsr#32
+	mov lr,lr,lsr#11
+	mov lr,lr,lsr#10
+	mov lr,lr,lsr#9
+#endif
 
 ;@----------------------------------------------------------------------------
 
 #ifdef NDS
-	.section .itcm						;@ For the NDS ARM9
+	.section .itcm, "ax", %progbits		;@ For the NDS ARM9
 #elif GBA
 	.section .iwram, "ax", %progbits	;@ For the GBA
 #endif
 	.align 2
-
 ;@----------------------------------------------------------------------------
 #ifdef WSAUDIO_LOW
 ;@----------------------------------------------------------------------------
@@ -372,6 +384,7 @@ totalVolume:
 	subs r0,r0,#1
 #ifdef GBA
 	add lr,lr,lr,lsr#16
+mix8Vol:
 	mov lr,lr,lsr#9
 	strbpl lr,[r1],#1
 #else
@@ -475,9 +488,8 @@ vol4_R:
 	orrsne lr,lr,#0xFF0000		;@ Volume right
 	mlane r2,lr,r11,r2
 
-	sub r0,r0,#1
-	tst r0,#3
-	bne innerMixLoop
+	adds r0,r0,#0x40000000
+	bcc innerMixLoop
 
 //	subs r8,r8,#PSG_SWEEP_ADD
 //	bhi noSweep
@@ -490,7 +502,7 @@ vol4_R:
 //	mov r5,r5,ror#21
 noSweep:
 	eor r2,r2,#0x00008000
-	cmp r0,#0
+	subs r0,r0,#1
 	strpl r2,[r1],#4
 	bhi mixLoop					;@ ?? cycles according to No$gba
 
