@@ -121,9 +121,9 @@ wsvLCDIcons:		.byte 0		;@ 0x15 LCD icons
 wsvTotalLines:		.byte 0		;@ 0x16 Total scan lines
 wsvVSync:			.byte 0		;@ 0x17 LCD_VSYNC
 wsvLineCounter:		.byte 0		;@ 0x18 Write current scan line.
-wsvPadding0:		.space 1	;@ 0x19 ???
+wsvPadding19:		.skip 1		;@ 0x19 ???
 wsvLatchedIcons:	.byte 0		;@ 0x1A Latched LCD icons
-wsvPadding1:		.space 1	;@ 0x1B ???
+wsvPadding1B:		.skip 1		;@ 0x1B ???
 
 wsvColor01:			.byte 0		;@ 0x1C Color 0 & 1
 wsvColor23:			.byte 0		;@ 0x1D Color 2 & 3
@@ -151,7 +151,7 @@ wsvDMASource:		.long 0		;@ 0x40-0x43 DMA source adr bits 19-0
 wsvDMADest:			.short 0	;@ 0x44/0x45 DMA destination adr bits 15-0
 wsvDMALength:		.short 0	;@ 0x46/0x47 DMA length bits 15-0
 wsvDMACtrl:			.byte 0		;@ 0x48 DMA control, bit 7 start
-wsvPadding2:		.space 1	;@ 0x49 ???
+wsvPadding49:		.skip 1		;@ 0x49 ???
 
 wsvSndDMASrcL:		.short 0	;@ 0x4A-0x4B Sound DMA source adr bits 15-0
 wsvSndDMASrcH:		.short 0	;@ 0x4C-0x4D Sound DMA source adr bits 19-16
@@ -159,20 +159,20 @@ wsvSndDMALenL:		.short 0	;@ 0x4E-0x4F Sound DMA length bits 15-0
 wsvSndDMALenH:		.short 0	;@ 0x50-0x51 Sound DMA length bits 19-16
 wsvSndDMACtrl:		.byte 0		;@ 0x52 Sound DMA control, bit 7 start
 
-wsvPadding3:		.space 13	;@ 0x53 - 0x5F ???
+wsvPadding53:		.skip 13	;@ 0x53 - 0x5F ???
 
 wsvVideoMode:		.byte 0		;@ 0x60 Video rendering mode
-wsvPadding4:		.space 1	;@ 0x61 ???
+wsvPadding61:		.skip 1		;@ 0x61 ???
 
 wsvSystemCtrl3:		.byte 0		;@ 0x62 WSC / SC, Power off
-wsvPadding5:		.space 1	;@ 0x63 ???
+wsvPadding63:		.skip 1		;@ 0x63 ???
 
 wsvHyperVL:			.short 0	;@ 0x64 HyperVoice Left channel
 wsvHyperVR:			.short 0	;@ 0x66 HyperVoice Right channel
 wsvHyperVSL:		.byte 0		;@ 0x68 HyperVoice Shadow (lower byte? left?)
 wsvHyperVSH:		.byte 0		;@ 0x69 HyperVoice Shadow (upper byte? right?)
 wsvHyperVCtrl:		.short 0	;@ 0x6A HyperVoice control
-wsvPadding5_1:		.space 4	;@ 0x6C - 0x6F ???
+wsvPadding6C:		.skip 4		;@ 0x6C - 0x6F ???
 
 wsvSCLCDCtrl0:		.byte 0		;@ 0x70 SC LCD control 0
 wsvSCLCDCtrl1:		.byte 0		;@ 0x71 SC LCD control 1
@@ -182,7 +182,7 @@ wsvSCLCDCtrl4:		.byte 0		;@ 0x74 SC LCD control 4
 wsvSCLCDCtrl5:		.byte 0		;@ 0x75 SC LCD control 5
 wsvSCLCDCtrl6:		.byte 0		;@ 0x76 SC LCD control 6
 wsvSCLCDCtrl7:		.byte 0		;@ 0x77 SC LCD control 7
-wsvPadding6:		.space 8	;@ 0x78 - 0x7F ???
+wsvPadding78:		.skip 8		;@ 0x78 - 0x7F ???
 
 wsvSound1Freq:		.short 0	;@ 0x80/0x81 Sound ch 1 pitch bits 10-0
 wsvSound2Freq:		.short 0	;@ 0x82/0x83 Sound ch 2 pitch bits 10-0
@@ -209,11 +209,11 @@ wsvSoundOutL:		.short 0	;@ 0x98/0x99 Sound out Left,  10  bits
 wsvSoundOutM:		.short 0	;@ 0x9A/0x9B Sound out Mixed, 11  bits
 wsvPadding7:		.short 0	;@ 0x9C/0x9D ???
 wsvHWVolume:		.byte 0		;@ 0x9E HW Volume (2 bit)
-wsvPadding8:		.space 1	;@ 0x9F ???
+wsvPadding9F:		.skip 1		;@ 0x9F ???
 
 wsvSystemCtrl1:		.byte 0		;@ 0xA0 Hardware type, boot rom lock.
 
-wsvPadding9:		.space 1	;@ 0xA1 ???
+wsvPaddingA1:		.skip 1		;@ 0xA1 ???
 
 wsvTimerControl:	.byte 0		;@ 0xA2 Timer control
 wsvSystemTest:		.byte 0		;@ 0xA3 System Test
@@ -223,7 +223,7 @@ wsvHBlCounter:		.short 0	;@ 0xA8/0xA9 HBlank Counter - 1/12000s
 wsvVBlCounter:		.short 0	;@ 0xAA/0xAB VBlank Counter - 1/75s
 
 wsvPowerOff:		.byte 0		;@ 0xAC Power Off
-wsvPadding11:		.space 3	;@ 0xAD - 0xAF ???
+wsvPaddingAD:		.skip 3		;@ 0xAD - 0xAF ???
 
 wsvInterruptBase:	.byte 0		;@ 0xB0 Interrupt base
 wsvByteReceived:	.byte 0		;@ 0xB1 Serial Communication byte
@@ -234,7 +234,7 @@ wsvKeypad:			.byte 0		;@ 0xB5 Input Controls
 wsvInterruptAck:	.byte 0		;@ 0xB6 Interrupt acknowledge
 wsvNMIControl:		.byte 0		;@ 0xB7 NMI Control
 
-wsvPadding12:		.space 2	;@ 0xB8 - 0xB9 ???
+wsvPaddingB8:		.skip 2		;@ 0xB8 - 0xB9 ???
 
 wsvIntEEPROMData:	.short 0	;@ 0xBA/0xBB Internal EEPROM data
 wsvIntEEPROMAdr:	.short 0	;@ 0xBC/0xBD Internal EEPROM address
@@ -263,7 +263,7 @@ wsvCartTimer:		.byte 0		;@ 0xD6 Cart Timer
 wsvPadding13:		.space 1	;@ 0xD7 ???
 wsvADPCMW:			.byte 0		;@ 0xD8 ADPCM Write
 wsvADPCMR:			.byte 0		;@ 0xD9 ADPCM Read
-wsvPadding14:		.space 38	;@ 0xDA - 0xFF ???
+wsvPaddingDA:		.skip 38	;@ 0xDA - 0xFF ???
 
 ;@----------------------------------------------------------------------------
 sndDmaSource:		.long 0		;@ Sound DMA source address (current)
@@ -296,7 +296,7 @@ wsvOldKeypadReg:	.byte 0
 wsvSoundIconTimer:	.byte 0
 wsvCartIconTimer:	.byte 0
 wsvRegMask14:		.byte 0
-wsvPadding15:		.space 1
+wsvPadding0:		.skip 1
 
 enabledLCDIcons:	.long 0
 dispLine: 			.long 0		;@ Last line dispCtrl was updated.
@@ -312,7 +312,7 @@ cachedMaps:			.space 4
 
 wsvSOC:				.byte 0		;@ ASwan, Sphinx or Sphinx2
 wsvMachine:			.byte 0		;@ WonderSwan, WonderSwanColor, SwanCrystal or PocketChallengeV2
-wsvPadding16:		.space 2
+wsvPadding1:		.skip 2
 
 irqFunction:		.long 0		;@ IRQ function
 rxFunction:			.long 0		;@ Serial in empty function

@@ -55,7 +55,25 @@
 	.align 2
 ;@----------------------------------------------------------------------------
 wsVideoInit:				;@ Only need to be called once
+;@ r0=ram+LUTs, r1=IrqFunc, r12=spxptr
 ;@----------------------------------------------------------------------------
+	str r0,[spxptr,#gfxRAM]
+	add r0,r0,#0xFE00
+	str r0,[spxptr,#paletteRAM]
+	ldr r0,=DISP_BUFF
+	str r0,[spxptr,#dispBuff]
+	ldr r0,=WINDOW_BUFF
+	str r0,[spxptr,#windowBuff]
+	ldr r0,=SCROLL_BUFF
+	str r0,[spxptr,#scrollBuff]
+
+	cmp r1,#0
+	adreq r1,dummyIrqFunc
+	str r1,[spxptr,#irqFunction]
+	adr r1,dummyIrqFunc
+	str r1,[spxptr,#rxFunction]
+	str r1,[spxptr,#txFunction]
+
 	ldr r0,=CHR_DECODE			;@ Destination 0x400
 	mov r1,#0xffffff00			;@ Build chr decode tbl
 chrLutLoop:
@@ -77,12 +95,12 @@ chrLutLoop:
 
 	bx lr
 ;@----------------------------------------------------------------------------
-wsVideoReset:				;@ r0=ram+LUTs, r1=machine, r2=IrqFunc
+wsVideoReset:				;@ r0=machine, r12=spxptr
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r0-r2,lr}
+	stmfd sp!,{r0,lr}
 
 	mov r0,spxptr
-	ldr r1,=sphinxSize/4
+	ldr r1,=sphinxStateSize/4
 	bl memclr_					;@ Clear Sphinx state
 
 	ldr r2,=lineStateTable
@@ -93,35 +111,18 @@ wsVideoReset:				;@ r0=ram+LUTs, r1=machine, r2=IrqFunc
 	str r0,[spxptr,#serialRXCounter]
 	str r0,[spxptr,#serialTXCounter]
 
-	ldmfd sp!,{r0-r2}
-
-	str r0,[spxptr,#gfxRAM]
-	add r0,r0,#0xFE00
-	str r0,[spxptr,#paletteRAM]
-	ldr r0,=DISP_BUFF
-	str r0,[spxptr,#dispBuff]
-	ldr r0,=WINDOW_BUFF
-	str r0,[spxptr,#windowBuff]
-	ldr r0,=SCROLL_BUFF
-	str r0,[spxptr,#scrollBuff]
+	ldmfd sp!,{r1}
 
 	strb r1,[spxptr,#wsvMachine]
 	cmp r1,#HW_WONDERSWAN
 	cmpne r1,#HW_POCKETCHALLENGEV2
 	moveq r0,#SOC_ASWAN
 	movne r0,#SOC_SPHINX2
-	subs r3,r1,#HW_WONDERSWANCOLOR
-	ldrne r3,=0xFFF
+	subs r2,r1,#HW_WONDERSWANCOLOR
+	ldrne r2,=0xFFF
 	moveq r0,#SOC_SPHINX
 	strb r0,[spxptr,#wsvSOC]
-	str r3,[spxptr,#wsvDefaultBgCol]
-
-	cmp r2,#0
-	adreq r2,dummyIrqFunc
-	str r2,[spxptr,#irqFunction]
-	adr r3,dummyIrqFunc
-	str r3,[spxptr,#rxFunction]
-	str r3,[spxptr,#txFunction]
+	str r2,[spxptr,#wsvDefaultBgCol]
 
 	;@ r0=SOC
 	bl initIOMap
@@ -1954,12 +1955,14 @@ tx4ColTileLoop1:
 ;@ bgMapFinish				;end of frame...
 ;@-------------------------------------------------------------------------------
 ;@	r5 = 0xFE00FE00
+;@	r6 = 0x00010001
 ;@	r8 = scrollBuff
+;@	r10 = gfxRAM
 ;@ MSB          LSB
 ;@ hvbppppnnnnnnnnn
 bgMap16Render:
 	stmfd sp!,{lr}
-	ldrb r7,[r8,#1]!
+	ldrb r7,[r8,#1]!				;@ Map table address
 	mov r1,#GAME_HEIGHT
 bgM16AdrLoop:
 	ldrb r9,[r8],#8
@@ -1972,7 +1975,7 @@ bgM16AdrDone:
 	orrne r7,r7,r9,lsl#24
 	add r11,r10,#0x10000			;@ Size of wsRAM, ptr to DIRTYTILES.
 
-	mov r2,#1						;@ Where the map is cached.
+	mov r2,#1						;@ Where the map is cached. 0 is used to dirty cache.
 	and r1,r7,#0xf
 	bl bgm16Start
 	mov r2,#2
@@ -2037,11 +2040,12 @@ bgm16Loop:
 ;@	r5 = 0xFE00FE00
 ;@	r6 = 0x00010001
 ;@	r8 = scrollBuff
+;@	r10 = gfxRAM
 ;@ MSB          LSB
 ;@ hvbppppnnnnnnnnn
 bgMap4Render:
 	stmfd sp!,{lr}
-	ldrb r7,[r8,#1]!
+	ldrb r7,[r8,#1]!				;@ Map table address
 	mov r1,#GAME_HEIGHT
 bgM4AdrLoop:
 	ldrb r9,[r8],#8
@@ -2121,12 +2125,11 @@ wsvCopyScrollValues:		;@ r0 = destination
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r8}
 	ldr r1,[spxptr,#scrollBuff]
-	ldrb r7,[r1,#1]
+	ldrb r7,[r1,#1]				;@ Map table address
 
 	mov r6,#((SCREEN_HEIGHT-GAME_HEIGHT)/2)<<23
 	add r0,r0,r6,lsr#20			;@ 8 bytes per row
-	mov r4,#(0x100-(SCREEN_WIDTH-GAME_WIDTH)/2)<<7
-	sub r4,r4,r6
+	rsb r4,r6,#(0x100-(SCREEN_WIDTH-GAME_WIDTH)/2)<<7
 	mov r5,#GAME_HEIGHT
 setScrlLoop:
 	ldmia r1!,{r2,r3}

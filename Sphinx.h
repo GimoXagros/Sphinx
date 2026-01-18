@@ -5,7 +5,6 @@
 //  Created by Fredrik Ahlström on 2006-07-23.
 //  Copyright © 2006-2026 Fredrik Ahlström. All rights reserved.
 //
-
 #ifndef SPHINX_HEADER
 #define SPHINX_HEADER
 
@@ -96,11 +95,11 @@ typedef struct {
 	/// 0x18 Write current scan line
 	u8 lineCounter;
 	/// 0x19 No register
-	u8 padding0[1];
+	u8 padding19[1];
 	/// 0x1A LCD Cartridge & Volume icons
 	u8 latchedIcons;
 	/// 0x1B No register
-	u8 padding1[1];
+	u8 padding1B[1];
 
 	/// 0x1C Color 0 & 1
 	u8 color01;
@@ -153,7 +152,7 @@ typedef struct {
 	/// 0x48 DMA control, bit 7 start
 	u8 dmaCtrl;
 	/// 0x49 No register
-	u8 padding2[1];
+	u8 padding49[1];
 
 	/// 0x4A-0x4B Sound DMA source adr bits 15-0
 	u16 sndDMASrcL;
@@ -167,17 +166,17 @@ typedef struct {
 	u8 sndDMACtrl;
 
 	/// 0x53 - 0x5F No registers
-	u8 padding3[13];
+	u8 padding53[13];
 
 	/// 0x60 Video rendering mode
 	u8 videoMode;
 
 	/// 0x61 No register
-	u8 padding4[1];
+	u8 padding61[1];
 	/// 0x62 WSC / SC, Power off
 	u8 systemCtrl3;
 	/// 0x63 No register
-	u8 padding5;
+	u8 padding63[1];
 	/// 0x64 HyperVoice Left channel (lower byte)
 	u8 hyperVLL;
 	/// 0x65 HyperVoice Left channel (upper byte)
@@ -195,7 +194,7 @@ typedef struct {
 	/// 0x6B HyperVoice channel control
 	u8 hyperVChnCtrl;
 	/// 0x6C - 0x6F No registers
-	u8 padding5_1[4];
+	u8 padding6C[4];
 
 	/// 0x70 SC LCD control 0
 	u8 scLCDCtrl0;
@@ -214,7 +213,7 @@ typedef struct {
 	/// 0x77 SC LCD control 7
 	u8 scLCDCtrl7;
 	/// 0x78 - 0x7F No registers
-	u8 padding6[8];
+	u8 padding78[8];
 
 	/// 0x80/0x81 Sound ch 1 pitch bits 10-0
 	u16 sound1Freq;
@@ -260,17 +259,17 @@ typedef struct {
 	/// 0x9A/0x9B Sound out Mixed, 11  bits
 	u16 soundOutM;
 	/// 0x9C - 0x9D No registers
-	u8 padding7[2];
+	u8 padding9C[2];
 	/// 0x9E HW Volume (2 bit)
 	u8 hwVolume;
 	/// 0x9F No register
-	u8 padding8;
+	u8 padding9F[1];
 
 	/// 0xA0 Hardware type, boot rom lock.
 	u8 systemCtrl1;
 
 	/// 0xA1 No register
-	u8 padding9;
+	u8 paddingA1[1];
 
 	/// 0xA2 Timer control
 	u8 timerControl;
@@ -288,7 +287,7 @@ typedef struct {
 	/// 0xAC Power off
 	u8 powerOff;
 	/// 0xAD - 0xAF No registers
-	u8 padding11[3];
+	u8 paddingAD[3];
 
 	/// 0xB0 Interrupt base
 	u8 interruptBase;
@@ -308,7 +307,7 @@ typedef struct {
 	u8 nmiControl;
 
 	/// 0xB8 - 0xB9 No registers
-	u8 padding12[2];
+	u8 paddingB8[2];
 
 	/// 0xBA/0xBB Internal EEPROM data
 	u16 intEEPROMData;
@@ -355,13 +354,13 @@ typedef struct {
 	/// 0xD6 Cart Timer (Karnak)
 	u8 cartTimer;
 	/// 0xD7 No register
-	u8 padding13[1];
+	u8 paddingD7[1];
 	/// 0xD8 ADPCM Write (Karnak)
 	u8 adpcmW;
 	/// 0xD9 ADPCM Read (Karnak)
 	u8 adpcmR;
 	/// 0xDA - 0xFF No registers
-	u8 padding14[38];
+	u8 paddingDA[38];
 //--------- End of IO-Ports ---------------------
 
 	/// Original Sound DMA source address
@@ -410,7 +409,7 @@ typedef struct {
 	u8 soundIconTimer;
 	u8 cartIconTimer;
 	u8 regMask14;
-	u8 padding15[2];
+	u8 padding0[1];
 
 	u32 enabledLCDIcons;
 	/// Last line dispCtrl was updated.
@@ -434,7 +433,7 @@ typedef struct {
 	u8 soc;
 	/// WonderSwan, WonderSwanColor, SwanCrystal or PocketChallengeV2
 	u8 machine;
-	u8 padding16[2];
+	u8 padding1[2];
 
 	/// IRQ callback
 	void (*irqFunction)(bool pin);

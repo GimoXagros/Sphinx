@@ -2,7 +2,7 @@ Bandai WonderSwan/Sphinx To do
 ------------------------------
 
 	Add support for cart-io waitstates.
-	Handle double buffered tile maps better, see Hataraku Chocobo.
+	Handle double buffered tile maps better, see Hataraku Chocobo. 24 July 2024.
 	Fix HyperVoice stereo handling.
 	Palette change per line?
 	Sound frequency updates are not working as on HW (writing to frequency reg).
