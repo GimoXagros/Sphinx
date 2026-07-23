@@ -511,4 +511,4 @@ noSweep:
 #endif
 
 
-#endif // #ifdef __arm__
+#endif // __arm__

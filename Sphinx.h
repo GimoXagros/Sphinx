@@ -491,4 +491,4 @@ u8 spxGetIOPortRaw(Sphinx *chip, int port);
 } // extern "C"
 #endif
 
-#endif // SPHINX_HEADER
+#endif // !SPHINX_HEADER

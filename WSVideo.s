@@ -151,7 +151,7 @@ wsvSetPowerOff:
 	strb r0,[spxptr,#wsvPowerOff]
 	mov r0,#143
 	str r0,[spxptr,#scanline]
-	bl setMuteSoundChip
+	bl soundSetMuteChip
 	bl setupEmuBgrShutDown
 	ldmfd sp!,{lr}
 	bx lr
@@ -1676,7 +1676,7 @@ noTimerHBlIrq:
 noExtraSound:
 	bl soundUpdate
 skipSound:
-#endif
+#endif // !GBA
 
 	ldr r0,[spxptr,#scanline]
 	subs r0,r0,#144				;@ Return from emulation loop on this scanline
@@ -2911,4 +2911,4 @@ SCROLL_BUFF:
 WINDOW_BUFF:
 	.space 160*4
 
-#endif // #ifdef __arm__
+#endif // __arm__
