@@ -1528,7 +1528,40 @@ tMapRet:
 ;@----------------------------------------------------------------------------
 newFrame:					;@ Called before line 0
 ;@----------------------------------------------------------------------------
-	bx lr
+	ldr r0,=onePieceVideoFixEnabled
+	ldrb r0,[r0]
+	cmp r0,#0
+	bxeq lr
+	ldrb r0,[spxptr,#wsvVideoMode]
+	tst r0,#0x40					;@ Double buffering is only available for 4bpp OBJ tiles.
+	beq onePieceNoObjDoubleBuffer
+	ldr r3,=onePieceObjTileOffset
+	ldrh r1,[r3]					;@ Currently complete OBJ tile bank.
+	eor r0,r1,#0x200				;@ 512 4bpp tiles = 16 KiB.
+	strh r0,[r3]
+	ldr r3,=SPRITE_GFX
+	add r1,r3,r1,lsl#5			;@ Source: current complete bank.
+	add r0,r3,r0,lsl#5			;@ Destination: off-screen bank.
+	mov r2,#0x4000
+	stmfd sp!,{spxptr,lr}
+	bl memCopy						;@ Seed unchanged tiles before applying dirty deltas.
+	ldmfd sp!,{spxptr,lr}
+	b drawFrameGfx					;@ Apply VBlank tile writes to the off-screen bank.
+onePieceNoObjDoubleBuffer:
+	ldr r0,=onePieceObjTileOffset
+	mov r1,#0
+	strh r1,[r0]
+	b drawFrameGfx					;@ Convert tiles after the target has finished VBlank updates.
+;@----------------------------------------------------------------------------
+latchSpritesForOnePiece:	;@ Hardware latches the sprite table after visible line 142.
+;@----------------------------------------------------------------------------
+	ldr r0,=onePieceVideoFixEnabled
+	ldrb r0,[r0]
+	cmp r0,#0
+	bxeq lr
+	stmfd sp!,{lr}
+	bl dmaSprites
+	ldmfd sp!,{pc}
 ;@----------------------------------------------------------------------------
 endFrame:
 ;@----------------------------------------------------------------------------
@@ -1548,7 +1581,10 @@ endFrame:
 #endif
 	bl scrollCnt
 	bl gfxEndFrame
-	bl dmaSprites
+	ldr r0,=onePieceVideoFixEnabled
+	ldrb r0,[r0]
+	cmp r0,#0
+	bleq dmaSprites				;@ Keep the r3 timing for every other title.
 	ldmfd sp!,{lr}
 
 	ldrb r0,[spxptr,#wsvKeypad]
@@ -1592,6 +1628,15 @@ transRet:
 	ldmfd sp!,{pc}
 
 ;@----------------------------------------------------------------------------
+drawFrameGfxAtVBlank:
+;@----------------------------------------------------------------------------
+	ldr r0,=onePieceVideoFixEnabled
+	ldrb r0,[r0]
+	cmp r0,#0
+	bxne lr					;@ One Piece converts at newFrame instead.
+	b drawFrameGfx
+
+;@----------------------------------------------------------------------------
 frameEndHook:
 	mov r0,#0
 	str r0,[spxptr,#dispLine]
@@ -1607,8 +1652,9 @@ frameEndHook:
 ;@----------------------------------------------------------------------------
 lineStateTable:
 	.long 0, newFrame			;@ zeroLine
+	.long 143, latchSpritesForOnePiece	;@ Just after visible line 142
 	.long 144, endFrame			;@ After last visible scanline
-	.long 145, drawFrameGfx		;@ frameIRQ
+	.long 145, drawFrameGfxAtVBlank	;@ frameIRQ
 lineStateLastLine:
 	.long 159, frameEndHook		;@ totalScanlines
 ;@----------------------------------------------------------------------------
@@ -1635,6 +1681,14 @@ continueScanline:
 	cmp r0,r1
 	bpl redoScanline
 	str r0,[spxptr,#scanline]
+	ldr r2,=onePieceVideoFixEnabled
+	ldrb r2,[r2]
+	cmp r2,#0
+	beq noPaletteRasterCapture
+	stmfd sp!,{r0-r3,spxptr,lr}
+	bl paletteRasterCaptureLine
+	ldmfd sp!,{r0-r3,spxptr,lr}
+noPaletteRasterCapture:
 ;@----------------------------------------------------------------------------
 checkScanlineIRQ:
 ;@----------------------------------------------------------------------------
@@ -1788,6 +1842,9 @@ transferVRAM16Packed:
 	stmfd sp!,{r4-r10,lr}
 	adr r0,tData
 	ldmia r0,{r4-r8}
+	ldr r0,=onePieceObjTileOffset
+	ldrh r0,[r0]
+	add r8,r8,r0,lsl#5			;@ Select the target's off-screen 4bpp OBJ tile bank.
 	ldr r6,=0xF0F0F0F0
 	ldr r9,=0x10101010
 	mov r1,#0
@@ -1833,6 +1890,9 @@ transferVRAM16Planar:
 	stmfd sp!,{r4-r10,lr}
 	adr r0,tData
 	ldmia r0,{r4-r8}
+	ldr r0,=onePieceObjTileOffset
+	ldrh r0,[r0]
+	add r8,r8,r0,lsl#5			;@ Select the target's off-screen 4bpp OBJ tile bank.
 	ldr r9,=0x20202020
 	mov r1,#0
 
@@ -2183,7 +2243,7 @@ dmaSprites:
 ;@----------------------------------------------------------------------------
 wsvConvertSprites:			;@ in r0 = destination.
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r8,lr}
+	stmfd sp!,{r4-r9,lr}
 
 	add r1,spxptr,#wsvSpriteRAM
 	ldrb r7,[spxptr,#wsvLatchedSprCnt]
@@ -2191,6 +2251,9 @@ wsvConvertSprites:			;@ in r0 = destination.
 	tst r2,#0x40				;@ 4 bit planes?
 	movne r8,#0x0000
 	moveq r8,#0x0800			;@ Palette bit 2
+	mov r9,#0
+	ldrne r3,=onePieceObjTileOffset
+	ldrhne r9,[r3]				;@ Match OAM with the completed 4bpp OBJ tile bank.
 	cmp r7,#0
 	rsb r6,r7,#128				;@ Max number of sprites minus used.
 	beq skipSprites
@@ -2224,6 +2287,7 @@ dm5:
 	orrne r3,r3,#PRIORITY		;@ Prio GBA/NDS
 	tst r2,r8					;@ Palette bit 2 for 2bitplane
 	orrne r3,r3,#0x200			;@ Opaque tiles
+	orr r3,r3,r9
 
 	strh r3,[r0],#4				;@ Store OBJ Atr 2. Pattern, palette, prio.
 	subs r7,r7,#1
@@ -2234,7 +2298,7 @@ skipSprLoop:
 	subs r6,r6,#1
 	strpl r2,[r0],#8
 	bhi skipSprLoop
-	ldmfd sp!,{r4-r8,pc}
+	ldmfd sp!,{r4-r9,pc}
 
 #ifdef GBA
 	.section .ewram, "ax", %progbits	;@ For the GBA
