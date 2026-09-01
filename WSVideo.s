@@ -1822,6 +1822,9 @@ transferVRAM16Packed:
 	stmfd sp!,{r4-r10,lr}
 	adr r0,tData
 	ldmia r0,{r4-r8}
+	ldr r0,=wsvBgTileOffset
+	ldrh r0,[r0]
+	add r7,r7,r0				;@ Decode into the off-screen BG character bank.
 	ldr r0,=wsvObjTileOffset
 	ldrh r0,[r0]
 	add r8,r8,r0,lsl#5			;@ Select the target's off-screen 4bpp OBJ tile bank.
@@ -1871,6 +1874,9 @@ transferVRAM16Planar:
 	stmfd sp!,{r4-r10,lr}
 	adr r0,tData
 	ldmia r0,{r4-r8}
+	ldr r0,=wsvBgTileOffset
+	ldrh r0,[r0]
+	add r7,r7,r0				;@ Decode into the off-screen BG character bank.
 	ldr r0,=wsvObjTileOffset
 	ldrh r0,[r0]
 	add r8,r8,r0,lsl#5			;@ Select the target's off-screen 4bpp OBJ tile bank.
@@ -1937,6 +1943,10 @@ transferVRAM4Planar:
 	stmfd sp!,{r4-r12,lr}
 	adr r0,t4Data
 	ldmia r0,{r4-r11}
+	ldr r0,=wsvBgTileOffset
+	ldrh r0,[r0]
+	add r7,r7,r0				;@ Transparent BG tiles.
+	add r9,r9,r0				;@ Opaque BG tiles.
 	mov r1,#0
 
 tx4ColTileLoop0:
