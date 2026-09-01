@@ -1550,10 +1550,8 @@ newFrame:					;@ Called before line 0
 	ldrb r0,[spxptr,#wsvVideoMode]
 	stmfd sp!,{spxptr,lr}
 	bl objTileBufferBeginFrame		;@ Keep the build bank coherent using only changed tiles.
-	ldmfd sp!,{spxptr}
-	bl drawFrameGfx					;@ Convert after the target has finished VBlank updates.
-	bl gfxNewFrame					;@ Commit OAM against that exact OBJ tile generation.
-	ldmfd sp!,{pc}
+	ldmfd sp!,{spxptr,lr}
+	b drawFrameGfx					;@ Convert after the target has finished VBlank updates.
 ;@----------------------------------------------------------------------------
 latchSpritesForFrame:		;@ Hardware latches the sprite table after visible line 142.
 ;@----------------------------------------------------------------------------
