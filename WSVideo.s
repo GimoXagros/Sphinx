@@ -1547,37 +1547,14 @@ tMapRet:
 ;@----------------------------------------------------------------------------
 newFrame:					;@ Called before line 0
 ;@----------------------------------------------------------------------------
-	ldr r0,=onePieceVideoFixEnabled
-	ldrb r0,[r0]
-	cmp r0,#0
-	bxeq lr
 	ldrb r0,[spxptr,#wsvVideoMode]
-	tst r0,#0x40					;@ Double buffering is only available for 4bpp OBJ tiles.
-	beq onePieceNoObjDoubleBuffer
-	ldr r3,=onePieceObjTileOffset
-	ldrh r1,[r3]					;@ Currently complete OBJ tile bank.
-	eor r0,r1,#0x200				;@ 512 4bpp tiles = 16 KiB.
-	strh r0,[r3]
-	ldr r3,=SPRITE_GFX
-	add r1,r3,r1,lsl#5			;@ Source: current complete bank.
-	add r0,r3,r0,lsl#5			;@ Destination: off-screen bank.
-	mov r2,#0x4000
 	stmfd sp!,{spxptr,lr}
-	bl memCopy						;@ Seed unchanged tiles before applying dirty deltas.
+	bl objTileBufferBeginFrame		;@ Keep the build bank coherent using only changed tiles.
 	ldmfd sp!,{spxptr,lr}
-	b drawFrameGfx					;@ Apply VBlank tile writes to the off-screen bank.
-onePieceNoObjDoubleBuffer:
-	ldr r0,=onePieceObjTileOffset
-	mov r1,#0
-	strh r1,[r0]
-	b drawFrameGfx					;@ Convert tiles after the target has finished VBlank updates.
+	b drawFrameGfx					;@ Convert after the target has finished VBlank updates.
 ;@----------------------------------------------------------------------------
-latchSpritesForOnePiece:	;@ Hardware latches the sprite table after visible line 142.
+latchSpritesForFrame:		;@ Hardware latches the sprite table after visible line 142.
 ;@----------------------------------------------------------------------------
-	ldr r0,=onePieceVideoFixEnabled
-	ldrb r0,[r0]
-	cmp r0,#0
-	bxeq lr
 	stmfd sp!,{lr}
 	bl dmaSprites
 	ldmfd sp!,{pc}
@@ -1600,10 +1577,6 @@ endFrame:
 #endif
 	bl scrollCnt
 	bl gfxEndFrame
-	ldr r0,=onePieceVideoFixEnabled
-	ldrb r0,[r0]
-	cmp r0,#0
-	bleq dmaSprites				;@ Keep the r3 timing for every other title.
 	ldmfd sp!,{lr}
 
 	ldrb r0,[spxptr,#wsvKeypad]
@@ -1649,11 +1622,7 @@ transRet:
 ;@----------------------------------------------------------------------------
 drawFrameGfxAtVBlank:
 ;@----------------------------------------------------------------------------
-	ldr r0,=onePieceVideoFixEnabled
-	ldrb r0,[r0]
-	cmp r0,#0
-	bxne lr					;@ One Piece converts at newFrame instead.
-	b drawFrameGfx
+	bx lr						;@ Conversion now happens for every title at line 0.
 
 ;@----------------------------------------------------------------------------
 frameEndHook:
@@ -1671,7 +1640,7 @@ frameEndHook:
 ;@----------------------------------------------------------------------------
 lineStateTable:
 	.long 0, newFrame			;@ zeroLine
-	.long 143, latchSpritesForOnePiece	;@ Just after visible line 142
+	.long 143, latchSpritesForFrame	;@ Just after visible line 142
 	.long 144, endFrame			;@ After last visible scanline
 	.long 145, drawFrameGfxAtVBlank	;@ frameIRQ
 lineStateLastLine:
@@ -1853,7 +1822,7 @@ transferVRAM16Packed:
 	stmfd sp!,{r4-r10,lr}
 	adr r0,tData
 	ldmia r0,{r4-r8}
-	ldr r0,=onePieceObjTileOffset
+	ldr r0,=wsvObjTileOffset
 	ldrh r0,[r0]
 	add r8,r8,r0,lsl#5			;@ Select the target's off-screen 4bpp OBJ tile bank.
 	ldr r6,=0xF0F0F0F0
@@ -1888,7 +1857,8 @@ tileLoop16_1p:
 	orr r3,r3,r0,lsr#4
 
 	str r3,[r7,r1]
-	str r3,[r8,r1]
+	cmp r1,#0x4000				;@ WSC OBJ attributes address only 512 tiles.
+	strcc r3,[r8,r1]
 	add r1,r1,#4
 	tst r1,#0x1C
 	bne tileLoop16_1p
@@ -1901,7 +1871,7 @@ transferVRAM16Planar:
 	stmfd sp!,{r4-r10,lr}
 	adr r0,tData
 	ldmia r0,{r4-r8}
-	ldr r0,=onePieceObjTileOffset
+	ldr r0,=wsvObjTileOffset
 	ldrh r0,[r0]
 	add r8,r8,r0,lsl#5			;@ Select the target's off-screen 4bpp OBJ tile bank.
 	ldr r9,=0x20202020
@@ -1943,7 +1913,8 @@ tx16ColTileLoop1:
 	orrne r3,r3,r2,lsl#3
 
 	str r3,[r7,r1]
-	str r3,[r8,r1]
+	cmp r1,#0x4000				;@ Do not overwrite the other 16 KiB OBJ bank.
+	strcc r3,[r8,r1]
 	add r1,r1,#4
 	tst r1,#0x1C
 	bne tx16ColTileLoop1
@@ -2263,7 +2234,7 @@ wsvConvertSprites:			;@ in r0 = destination.
 	movne r8,#0x0000
 	moveq r8,#0x0800			;@ Palette bit 2
 	mov r9,#0
-	ldrne r3,=onePieceObjTileOffset
+	ldrne r3,=wsvObjTileOffset
 	ldrhne r9,[r3]				;@ Match OAM with the completed 4bpp OBJ tile bank.
 	cmp r7,#0
 	rsb r6,r7,#128				;@ Max number of sprites minus used.
