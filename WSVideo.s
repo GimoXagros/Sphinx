@@ -2230,12 +2230,13 @@ wsvConvertSprites:			;@ in r0 = destination.
 	add r1,spxptr,#wsvSpriteRAM
 	ldrb r7,[spxptr,#wsvLatchedSprCnt]
 	ldrb r2,[spxptr,#wsvVideoMode]
-	tst r2,#0x40				;@ 4 bit planes?
-	movne r8,#0x0000
-	moveq r8,#0x0800			;@ Palette bit 2
+	and r2,r2,#0xC0
+	cmp r2,#0xC0				;@ Color and 4 bit planes?
+	moveq r8,#0x0000
+	movne r8,#0x0800			;@ Palette bit 2
 	mov r9,#0
-	ldrne r3,=wsvObjTileOffset
-	ldrhne r9,[r3]				;@ Match OAM with the completed 4bpp OBJ tile bank.
+	ldreq r3,=wsvObjTileOffset
+	ldrheq r9,[r3]				;@ Match OAM with the completed 4bpp OBJ tile bank.
 	cmp r7,#0
 	rsb r6,r7,#128				;@ Max number of sprites minus used.
 	beq skipSprites
