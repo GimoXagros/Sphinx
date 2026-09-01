@@ -1815,7 +1815,7 @@ tData:
 	.long wsRAM+0x4000
 	.long CHR_DECODE
 	.long BG_GFX+0x08000		;@ BGR tiles
-	.long SPRITE_GFX			;@ SPR tiles
+	.long wsvObjTileSnapshots	;@ Two coherent 4bpp OBJ snapshots in main RAM.
 ;@----------------------------------------------------------------------------
 transferVRAM16Packed:
 ;@----------------------------------------------------------------------------
@@ -2244,9 +2244,6 @@ wsvConvertSprites:			;@ in r0 = destination.
 	cmp r2,#0xC0				;@ Color and 4 bit planes?
 	moveq r8,#0x0000
 	movne r8,#0x0800			;@ Palette bit 2
-	mov r9,#0
-	ldreq r3,=wsvObjTileOffset
-	ldrheq r9,[r3]				;@ Match OAM with the completed 4bpp OBJ tile bank.
 	cmp r7,#0
 	rsb r6,r7,#128				;@ Max number of sprites minus used.
 	beq skipSprites
@@ -2280,8 +2277,6 @@ dm5:
 	orrne r3,r3,#PRIORITY		;@ Prio GBA/NDS
 	tst r2,r8					;@ Palette bit 2 for 2bitplane
 	orrne r3,r3,#0x200			;@ Opaque tiles
-	orr r3,r3,r9
-
 	strh r3,[r0],#4				;@ Store OBJ Atr 2. Pattern, palette, prio.
 	subs r7,r7,#1
 	bne dm5
