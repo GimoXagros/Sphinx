@@ -712,10 +712,10 @@ wsvWrite16:					;@ I/O write word (0x00-0xFF)
 	tst r1,r1,lsr#1				;@ Odd address?
 	cmpcc r1,#0xC0				;@ Cart?
 	subcs v30cyc,v30cyc,#1*CYCLE	;@ Eat an extra cpu cycle
-	stmfd sp!,{r0,r1,lr}
+	stmfd sp!,{r0,r1,spxptr,lr}	;@ Keep nested handlers 8-byte aligned.
 	and r0,r0,#0xFF
 	bl wsvWrite
-	ldmfd sp!,{r0,r1,lr}
+	ldmfd sp!,{r0,r1,spxptr,lr}
 	mov r0,r0,lsr#8
 	add r1,r1,#1
 ;@----------------------------------------------------------------------------
