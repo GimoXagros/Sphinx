@@ -1945,8 +1945,8 @@ transferVRAM4Planar:
 	ldmia r0,{r4-r11}
 	ldr r0,=wsvBgTileOffset
 	ldrh r0,[r0]
-	add r7,r7,r0				;@ Transparent BG tiles.
-	add r9,r9,r0				;@ Opaque BG tiles.
+	add r7,r7,r0				;@ Opaque BG tiles (extra bitplane).
+	add r8,r8,r0				;@ Transparent BG tiles; r9/r10 stay at fixed OBJ bases.
 	mov r1,#0
 
 tx4ColTileLoop0:
